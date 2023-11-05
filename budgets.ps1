@@ -1,7 +1,0 @@
-az monitor autoscale create --resource-group clco_grp6 --resource clco-grp6-appsvcplan --resource-type Microsoft.Web/serverfarms --name autoscaleSettings --min-count 1 --max-count 5 --count 1 # cost efficiency
-az monitor autoscale rule add --resource-group clco_grp6 --autoscale-name autoscaleSettings --operator GreaterThan --metric-name CpuPercentage --threshold 70 --direction Increase --change-count 1 --cooldown 5 # add cpu scale-out rule
-az monitor autoscale rule add --resource-group clco_grp6 --autoscale-name autoscaleSettings --operator LessThan --metric-name CpuPercentage --threshold 30 --direction Decrease --change-count 1 --cooldown 5 # add cpu scale-in rule
-az webapp deployment slot create --name clco-grp6-webapp-1 --resource-group clco_grp6 --slot staging # operational efficiency
-az webapp deployment slot create --name clco-grp6-webapp-2 --resource-group clco_grp6 --slot staging # operational efficiency
-az webapp deployment slot create --name clco-grp6-webapp-3 --resource-group clco_grp6 --slot staging # operational efficiency
-az consumption budget create --resource-group clco_grp6 --name clco-grp6-budget --amount 90 --time-grain Monthly --start-date "2023-10-28" --end-date "2024-10-28" --category Cost # budget defintion
