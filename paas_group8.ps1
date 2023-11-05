@@ -1,0 +1,41 @@
+################### Azure Login ###################
+
+az login --use-device-code
+az account set --subscription 7d3b23f7-171d-40d3-b2a0-f0a9d98ddee0 # change subscription id to 'Azure for Students'
+
+################### Resource Group & Deployment ###################
+
+az group create --name clco_grp8 --location eastus
+az deployment group create --name clco-grp8-deployment --resource-group clco_grp8 --template-file ./azuredeploy.json --parameters storageName=clcogrp8sto storageSKU=Standard_LRS
+
+################### Web App Creation ###################
+
+cd .\clco-demo\ # change directory for webapp up upload
+az webapp up --runtime PYTHON:3.9 --sku B1 --location eastus --resource-group clco_grp8 --name clco-grp8-webapp-1 --plan clco-grp8-appsvcplan
+az appservice plan update --name clco-grp8-appsvcplan --resource-group clco_grp8 --number-of-workers 3 --sku B1
+
+################### Cognitive Services Account Creation ###################
+
+az cognitiveservices account create --name clco-grp8-ai-service --kind TextAnalytics --sku S --location eastus --resource-group clco_grp8 --yes --custom-domain clco-grp8-ai-service
+
+################### Virtual Network Setup ###################
+
+az network vnet create --resource-group clco_grp8 --location eastus --name clco_grp8_network --address-prefixes 10.0.0.0/16
+az network vnet subnet create --resource-group clco_grp8 --vnet-name clco_grp8_network --name clco_grp8_network_v1 --address-prefixes 10.0.0.0/24 --delegations Microsoft.Web/serverfarms --disable-private-endpoint-network-policies false
+az network vnet subnet create --resource-group clco_grp8 --vnet-name clco_grp8_network --name clco_grp8_network_v2 --address-prefixes 10.0.1.0/24 --disable-private-endpoint-network-policies true
+
+################### Private DNS Zone Creation ###################
+
+az network private-endpoint create --resource-group clco_grp8 --name "cognitive-pe" --location eastus --connection-name "cognitive-connection" --private-connection-resource-id "$(az cognitiveservices account show --resource-group clco_grp8 --name clco-grp8-ai-service --query "id" --output tsv)" --group-id account --vnet-name clco_grp8_network --subnet clco_grp8_network_v2
+az network private-dns zone create --resource-group clco_grp8 --name "privatelink.cognitiveservices.azure.com"
+az network private-dns link vnet create --resource-group clco_grp8 --name cognitiveservices-zonelink --zone-name privatelink.cognitiveservices.azure.com --virtual-network clco_grp8_network --registration-enabled False
+az network private-endpoint dns-zone-group create --resource-group clco_grp8 --endpoint-name "cognitive-pe" --name "cognitive-zone" --private-dns-zone privatelink.cognitiveservices.azure.com --zone-name privatelink.cognitiveservices.azure.com
+
+################### App Settings Configuration ###################
+
+az resource update --ids "/subscriptions/7d3b23f7-171d-40d3-b2a0-f0a9d98ddee0/resourceGroups/clco_grp8/providers/Microsoft.CognitiveServices/accounts/clco-grp8-ai-service" --set properties.networkAcls="{'defaultAction':'Deny'}"
+az resource patch --ids "/subscriptions/7d3b23f7-171d-40d3-b2a0-f0a9d98ddee0/resourceGroups/clco_grp8/providers/Microsoft.CognitiveServices/accounts/clco-grp8-ai-service" --properties "{ 'publicNetworkAccess': 'Disabled'}"
+
+az webapp update --resource-group clco_grp8 --name clco-grp8-webapp-1 --https-only
+az webapp vnet-integration add --resource-group clco_grp8 --name clco-grp8-webapp-1 --vnet clco_grp8_network --subnet clco_grp8_network_v1
+az webapp config appsettings set --resource-group clco_grp8 --name clco-grp8-webapp-1 --settings AZ_ENDPOINT="https://privatelink.cognitiveservices.azure.com/" AZ_KEY="$(az cognitiveservices account keys list --name clco-grp8-ai-service --resource-group clco_grp8 --query "key1" --output tsv)"
