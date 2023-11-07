@@ -46,3 +46,11 @@ az webapp update --resource-group clco_grp8 --name clco-grp8-webapp-1 --https-on
 ################### One time login and authorization via GitHub ###################
 
 # az webapp deployment github-actions add --name clco-grp8-webapp-1 --resource-group clco_grp8 --repo wi21b096/CLCO_PaaS --branch master --login-with-github
+
+################### URL to the deployed Azure Web App ###################
+
+# https://clco-grp8-webapp-1.azurewebsites.net/
+
+################### URL to the GitHub repository containing the pipeline ###################
+
+# https://github.com/wi21b096/CLCO_PaaS
