@@ -10,7 +10,7 @@ az deployment group create --name clco-grp8-deployment --resource-group clco_grp
 
 ################### Web App Creation ###################
 
-cd .\clco-demo\ # change directory for webapp up upload
+cd .\clco-demo\
 az webapp up --runtime PYTHON:3.9 --sku B1 --location eastus --resource-group clco_grp8 --name clco-grp8-webapp-1 --plan clco-grp8-appsvcplan
 cd ..
 az appservice plan update --name clco-grp8-appsvcplan --resource-group clco_grp8 --number-of-workers 3 --sku B1
