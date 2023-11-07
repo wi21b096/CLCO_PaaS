@@ -33,3 +33,4 @@ jobs:
         app-name: 'clco-grp8-webapp-1'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_ac560aac920e4886ad15a1251f71e72e }}
+        package: ./clco-demo
