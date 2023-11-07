@@ -42,7 +42,7 @@ az webapp vnet-integration add --resource-group clco_grp8 --name clco-grp8-webap
 az webapp config appsettings set --resource-group clco_grp8 --name clco-grp8-webapp-1 --settings AZ_ENDPOINT="https://privatelink.cognitiveservices.azure.com/" AZ_KEY="$(az cognitiveservices account keys list --name clco-grp8-ai-service --resource-group clco_grp8 --query "key1" --output tsv)"
 az webapp update --resource-group clco_grp8 --name clco-grp8-webapp-1 --https-only
 
-################### GitHub Pipeline ###################
+################### Create GitHub Pipeline ###################
 ################### One time login and authorization via GitHub ###################
 
 # az webapp deployment github-actions add --name clco-grp8-webapp-1 --resource-group clco_grp8 --repo wi21b096/CLCO_PaaS --branch master --login-with-github
